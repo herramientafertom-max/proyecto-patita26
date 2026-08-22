@@ -1,0 +1,16 @@
+.git
+**/node_modules
+**/dist
+.venv
+credenciales.txt
+.env
+.env.*
+!.env.example
+datos-origen
+migracion-preparada
+backups
+codigo-actual
+documentacion-fuente
+auditoria
+*.xlsx
+*.csv

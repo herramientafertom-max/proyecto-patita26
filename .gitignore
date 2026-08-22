@@ -1,0 +1,22 @@
+# Credenciales y variables locales
+.env
+.env.*
+credenciales.txt
+
+# Datos privados y artefactos locales de migración
+datos-origen/
+migracion-preparada/
+backups/
+.venv/
+codigo-actual/
+documentacion-fuente/
+
+# Dependencias, builds y herramientas
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+.DS_Store
+.idea/
+.vscode/

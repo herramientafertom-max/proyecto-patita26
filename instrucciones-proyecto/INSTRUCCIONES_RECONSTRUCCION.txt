@@ -1,0 +1,1161 @@
+Actúa como arquitecto de software senior, analista de sistemas, ingeniero full-stack, especialista en PostgreSQL/Supabase, DevOps, Docker, Git/GitHub y ciberseguridad.
+
+Tu misión es reconstruir profesionalmente una aplicación existente que actualmente funciona como MVP, manteniendo sus funcionalidades principales pero reemplazando completamente su arquitectura legacy por una arquitectura moderna, mantenible, escalable y preparada para producción.
+
+# CONTEXTO
+
+Existe un MVP funcional desarrollado originalmente utilizando Google Apps Script y una base de datos basada en hojas de cálculo.
+
+Ese MVP permitió validar el producto con el cliente.
+
+El cliente está conforme con las funcionalidades actuales y quiere continuar desarrollando el mismo producto.
+
+Sin embargo, la arquitectura actual NO será conservada.
+
+Google Apps Script y Google Sheets dejan de ser la plataforma principal del sistema.
+
+Los datos ya fueron migrados correctamente a PostgreSQL mediante Supabase.
+
+La nueva aplicación será desarrollada como un proyecto profesional.
+
+El código estará gestionado desde:
+
+* VS Code;
+* Git;
+* GitHub.
+
+La aplicación será empaquetada mediante:
+
+* Docker.
+
+El objetivo es que pueda desplegarse posteriormente en distintos proveedores o infraestructuras sin depender fuertemente de uno específico.
+
+# PRINCIPIO FUNDAMENTAL
+
+El sistema antiguo debe utilizarse como:
+
+**ESPECIFICACIÓN FUNCIONAL Y DE NEGOCIO**
+
+y NO como:
+
+**ARQUITECTURA DE REFERENCIA**
+
+Esto significa que debes conservar:
+
+* funcionalidades;
+* reglas de negocio;
+* flujos de usuario;
+* comportamiento esperado;
+* información presentada;
+* roles;
+* permisos funcionales;
+* procesos validados por el cliente.
+
+Pero NO debes copiar necesariamente:
+
+* estructura del código;
+* patrones utilizados en Apps Script;
+* búsquedas manuales;
+* superllaves concatenadas;
+* dependencia de hojas;
+* funciones monolíticas;
+* almacenamiento propio de Google;
+* limitaciones técnicas creadas por Sheets.
+
+Si PostgreSQL, Supabase o una arquitectura moderna permiten resolver algo mejor, debes rediseñarlo correctamente.
+
+# ARQUITECTURA OBJETIVO
+
+La arquitectura general debe evolucionar conceptualmente hacia:
+
+```text
+Usuarios
+   ↓
+Frontend
+   ↓
+API / Backend
+   ↓
+PostgreSQL - Supabase
+```
+
+Complementada, cuando sea necesario, por:
+
+```text
+Storage
+Autenticación
+Logs
+Servicios externos
+Tareas programadas
+```
+
+Todo ejecutable mediante contenedores Docker.
+
+NO asumas todavía qué framework utilizaremos para frontend o backend.
+
+Antes de elegir:
+
+* lenguaje;
+* framework;
+* librerías;
+* arquitectura;
+
+debes analizar los requisitos reales y presentarme alternativas.
+
+# OBJETIVO DEL PROYECTO
+
+Queremos pasar de:
+
+```text
+MVP funcional
++
+arquitectura limitada
+```
+
+a:
+
+```text
+producto mantenible
++
+arquitectura escalable
++
+base PostgreSQL
++
+repositorio profesional
++
+Docker
++
+seguridad
++
+pruebas
++
+capacidad de despliegue
+```
+
+sin perder las funcionalidades que el cliente ya validó.
+
+# FASE 1 — AUDITORÍA FUNCIONAL DEL MVP
+
+Antes de escribir código nuevo, analiza completamente el código existente.
+
+El objetivo NO es copiarlo.
+
+El objetivo es extraer:
+
+* funcionalidades;
+* reglas;
+* actores;
+* permisos;
+* entradas;
+* salidas;
+* procesos;
+* errores;
+* automatizaciones;
+* dependencias.
+
+Construye una matriz:
+
+| Módulo | Funcionalidad actual | Usuario | Entrada | Proceso | Salida | Dependencia legacy | Debe conservarse |
+| ------ | -------------------- | ------- | ------- | ------- | ------ | ------------------ | ---------------- |
+
+Identifica además:
+
+* funciones utilizadas;
+* funciones aparentemente obsoletas;
+* funcionalidades duplicadas;
+* funcionalidades parciales;
+* dependencias específicas de Google;
+* código de mantenimiento;
+* operaciones críticas.
+
+# FASE 2 — EXTRAER REGLAS DE NEGOCIO
+
+Separa claramente:
+
+## Código técnico antiguo
+
+de
+
+## Regla de negocio real
+
+Ejemplo:
+
+Código antiguo:
+
+```text
+buscar una fila en Google Sheets mediante TextFinder
+```
+
+Regla real:
+
+```text
+obtener todos los productos asociados a un local
+```
+
+La nueva implementación debe resolver la regla real mediante PostgreSQL.
+
+Otro ejemplo:
+
+Código antiguo:
+
+```text
+LLAVE_LOCAL + "_" + SAP
+```
+
+Regla real:
+
+```text
+relación entre un local y un producto
+```
+
+Si la base normalizada ya representa esa relación mediante claves foráneas, utiliza esas relaciones.
+
+No recrees estructuras artificiales solamente porque existían en Excel.
+
+# FASE 3 — FUNCIONALIDADES A CONSERVAR
+
+Identifica y verifica las funcionalidades reales del MVP.
+
+Entre ellas pueden existir:
+
+## Multi-cliente
+
+* distintas empresas/clientes;
+* aislamiento de información;
+* activación/desactivación de clientes.
+
+## Usuarios
+
+* login;
+* RUT;
+* nombre;
+* rol;
+* asignaciones.
+
+## Roles
+
+* Administrador;
+* Supervisor;
+* Reponedor;
+* Reponedor Externo;
+* otros encontrados.
+
+## Locales
+
+* cadena;
+* subcadena;
+* local;
+* dirección;
+* GPS;
+* estado;
+* código o llave.
+
+## Productos
+
+* SAP;
+* EAN;
+* marca;
+* nombre;
+* sección;
+* unidades por caja;
+* precio;
+* fotografías;
+* estado.
+
+## Stock
+
+* stock actual;
+* local;
+* producto;
+* fecha de actualización.
+
+## Historial de stock
+
+* consulta histórica;
+* producto;
+* local;
+* fecha.
+
+## Inventario y sugeridos
+
+* registro de conteos;
+* unidades;
+* cajas;
+* actualización;
+* historial.
+
+## Fotografías
+
+* fotografías de terreno;
+* fotografías de producto;
+* fotografías de caja;
+* relación con usuario;
+* local;
+* producto;
+* fecha.
+
+## Administración de usuarios
+
+* listar;
+* crear;
+* editar;
+* asignar locales;
+* asignar rutas;
+* cambiar roles.
+
+## Administración de productos
+
+* consultar;
+* modificar datos permitidos;
+* modificar precio;
+* fotografías;
+* estado.
+
+## Estadísticas
+
+* accesos;
+* actividad;
+* información por usuario;
+* períodos recientes.
+
+## Automatizaciones
+
+* snapshots;
+* limpieza;
+* tareas programadas;
+* mantenimiento.
+
+No asumas que todas deben conservarse exactamente de la misma manera.
+
+Clasifícalas:
+
+* crítica;
+* importante;
+* secundaria;
+* legacy;
+* requiere confirmación.
+
+# FASE 4 — ANALIZAR LA BASE EN SUPABASE
+
+Los datos ya están migrados.
+
+NO vuelvas a importarlos.
+
+Analiza el esquema existente.
+
+Identifica:
+
+* tablas;
+* columnas;
+* PK;
+* FK;
+* restricciones;
+* índices;
+* relaciones;
+* vistas;
+* funciones;
+* RLS;
+* usuarios;
+* Storage.
+
+Construye:
+
+| Concepto del MVP | Tabla/relación Supabase | Estado |
+| ---------------- | ----------------------- | ------ |
+
+Comprueba que las funcionalidades del MVP puedan reconstruirse utilizando el modelo normalizado existente.
+
+No crees tablas nuevas hasta demostrar que realmente son necesarias.
+
+# FASE 5 — VALIDACIÓN DE DATOS
+
+Antes de programar:
+
+ejecuta análisis de solo lectura sobre:
+
+* cantidad de registros;
+* duplicados;
+* valores nulos;
+* relaciones huérfanas;
+* productos;
+* locales;
+* clientes;
+* usuarios;
+* stocks;
+* asignaciones.
+
+Verifica que la migración preserve la información necesaria.
+
+No modifiques datos reales sin autorización.
+
+# FASE 6 — PROPUESTA DE STACK
+
+Una vez entendidos:
+
+* funcionalidades;
+* volumen;
+* base;
+* usuarios;
+* seguridad;
+* despliegue;
+
+propón entre 2 y 3 stacks razonables.
+
+Cada propuesta debe incluir:
+
+## Backend
+
+Lenguaje y framework.
+
+## Frontend
+
+Tecnología.
+
+## Base de datos
+
+Supabase PostgreSQL.
+
+## Autenticación
+
+Estrategia.
+
+## Storage
+
+Estrategia.
+
+## API
+
+REST, GraphQL u otra opción justificada.
+
+## Docker
+
+Organización de contenedores.
+
+## Testing
+
+Herramientas.
+
+## Producción
+
+Opciones compatibles.
+
+Compara:
+
+| Stack | Ventajas | Desventajas | Complejidad | Escalabilidad | Mantenibilidad |
+| ----- | -------- | ----------- | ----------- | ------------- | -------------- |
+
+Después entrega una recomendación.
+
+NO elijas tecnologías por moda.
+
+Elige según:
+
+* proyecto;
+* equipo;
+* mantenimiento;
+* escalabilidad;
+* curva de aprendizaje;
+* facilidad de despliegue.
+
+Espera mi aprobación antes de comenzar la implementación.
+
+# FASE 7 — ARQUITECTURA DEL REPOSITORIO
+
+Una vez aprobado el stack, define una estructura profesional.
+
+Ejemplo conceptual:
+
+```text
+retail-platform/
+│
+├── backend/
+├── frontend/
+├── database/
+├── docker/
+├── docs/
+├── tests/
+├── scripts/
+├── .github/
+├── docker-compose.yml
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
+Adapta esta estructura al stack elegido.
+
+# GIT Y GITHUB
+
+El repositorio debe utilizar buenas prácticas.
+
+Define:
+
+* rama principal;
+* ramas de desarrollo;
+* feature branches;
+* commits claros;
+* pull requests;
+* tags;
+* releases.
+
+Como mínimo:
+
+```text
+main
+develop
+feature/*
+fix/*
+```
+
+No hagas commits de:
+
+* `.env`;
+* contraseñas;
+* tokens;
+* service role;
+* archivos temporales;
+* bases locales;
+* dumps sensibles.
+
+Crea un `.gitignore` correcto.
+
+Crea:
+
+```text
+.env.example
+```
+
+sin valores secretos.
+
+# DOCKER
+
+La aplicación debe poder ejecutarse de forma reproducible utilizando Docker.
+
+Como mínimo considera:
+
+```text
+frontend
+backend
+```
+
+Supabase puede mantenerse como servicio externo.
+
+No es necesario contenerizar la base remota.
+
+El objetivo es poder ejecutar:
+
+```bash
+docker compose up
+```
+
+y levantar el entorno necesario de desarrollo cuando sea posible.
+
+Define:
+
+* Dockerfile;
+* docker-compose;
+* variables;
+* redes;
+* volúmenes;
+* healthchecks.
+
+No uses imágenes innecesariamente pesadas.
+
+Utiliza multi-stage builds cuando aporte valor.
+
+# INDEPENDENCIA DEL HOSTING
+
+No diseñes la aplicación para funcionar exclusivamente en:
+
+* Vercel;
+* Render;
+* Railway;
+* AWS;
+* Azure;
+* GCP;
+* otro proveedor.
+
+El uso de Docker debe permitir desplegar el sistema en distintas plataformas.
+
+Si alguna tecnología genera vendor lock-in, indícalo.
+
+Supabase será una dependencia intencional para base de datos y servicios relacionados.
+
+# MULTI-TENANT
+
+La aplicación debe mantener el modelo multi-cliente.
+
+Este punto es crítico.
+
+Define claramente:
+
+```text
+cliente
+   ↓
+usuarios
+   ↓
+locales
+   ↓
+productos / stock / operaciones
+```
+
+o la estructura correspondiente al esquema real.
+
+Un cliente nunca debe acceder a información de otro.
+
+Prueba aislamiento mediante:
+
+* API;
+* consultas;
+* roles;
+* RLS;
+* backend.
+
+# BACKEND
+
+La lógica crítica debe vivir preferentemente en backend.
+
+Ejemplos:
+
+* permisos;
+* operaciones administrativas;
+* modificación de stock;
+* edición de usuarios;
+* procesamiento de información;
+* reglas multi-cliente;
+* subida controlada de archivos.
+
+No pongas reglas críticas exclusivamente en frontend.
+
+# API
+
+Diseña una API clara y versionada.
+
+Ejemplo conceptual:
+
+```text
+/api/v1/
+```
+
+Define endpoints por recursos.
+
+Por ejemplo:
+
+```text
+/auth
+/users
+/clients
+/stores
+/products
+/stocks
+/inventory
+/photos
+/statistics
+```
+
+Estos nombres son conceptuales.
+
+Utiliza los nombres apropiados al dominio real.
+
+Documenta:
+
+* método;
+* endpoint;
+* parámetros;
+* body;
+* respuesta;
+* errores;
+* permisos.
+
+Si es posible utiliza OpenAPI/Swagger.
+
+# COMPATIBILIDAD FUNCIONAL
+
+El nuevo sistema NO necesita conservar exactamente los mismos nombres internos del sistema antiguo.
+
+Pero sí debe conservar el resultado funcional.
+
+Construye una matriz:
+
+| Funcionalidad MVP | Legacy | Nueva implementación | Resultado |
+| ----------------- | ------ | -------------------- | --------- |
+
+La nueva versión solo puede considerarse equivalente cuando las funciones críticas estén comprobadas.
+
+# RENDIMIENTO
+
+Existe una gran cantidad de productos y registros.
+
+Diseña las consultas considerando:
+
+* índices;
+* JOIN;
+* paginación;
+* filtros;
+* búsqueda;
+* límites;
+* caché cuando corresponda.
+
+Evita:
+
+```text
+SELECT *
+```
+
+sin necesidad.
+
+Evita descargar bases completas al navegador.
+
+Busca en servidor.
+
+Implementa paginación.
+
+Analiza con:
+
+```sql
+EXPLAIN
+```
+
+y cuando sea necesario:
+
+```sql
+EXPLAIN ANALYZE
+```
+
+# FOTOGRAFÍAS
+
+El sistema actual utiliza fotografías.
+
+Debes proponer cómo manejarlas en la nueva arquitectura.
+
+Analiza:
+
+## Supabase Storage
+
+vs.
+
+## almacenamiento externo
+
+Recomienda una opción.
+
+Define:
+
+* buckets;
+* naming;
+* permisos;
+* tamaños;
+* MIME;
+* compresión;
+* URLs;
+* retención.
+
+No almacenes imágenes Base64 directamente en PostgreSQL salvo razón excepcional.
+
+# AUTENTICACIÓN
+
+Analiza el login actual.
+
+Si actualmente se usa solo RUT, evalúa el riesgo.
+
+Propón opciones:
+
+* RUT + contraseña;
+* Supabase Auth;
+* magic link;
+* OTP;
+* otra solución.
+
+No cambies el método sin aprobación.
+
+# AUTORIZACIÓN
+
+Autenticación responde:
+
+```text
+¿Quién eres?
+```
+
+Autorización responde:
+
+```text
+¿Qué puedes hacer?
+```
+
+Implementa ambas.
+
+Define permisos por rol.
+
+No confíes en roles enviados desde frontend.
+
+# SEGURIDAD
+
+Realiza revisión de:
+
+* secretos;
+* autenticación;
+* autorización;
+* RLS;
+* SQL Injection;
+* XSS;
+* CSRF;
+* CORS;
+* uploads;
+* MIME;
+* tamaño;
+* rate limiting;
+* logs;
+* sesiones;
+* errores;
+* dependencias.
+
+Nunca expongas:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY
+```
+
+al frontend.
+
+# LOGS
+
+Implementa logging estructurado.
+
+Registra:
+
+* timestamp;
+* nivel;
+* módulo;
+* operación;
+* cliente;
+* usuario;
+* request ID.
+
+Nunca registres:
+
+* password;
+* token;
+* cookies completas;
+* API keys;
+* service role.
+
+# MANEJO DE ERRORES
+
+No devuelvas errores internos completos al usuario.
+
+Utiliza:
+
+```text
+400
+401
+403
+404
+409
+422
+429
+500
+```
+
+cuando corresponda.
+
+Los detalles técnicos deben quedar en logs.
+
+# TESTING
+
+Implementa:
+
+## Unit tests
+
+Reglas independientes.
+
+## Integration tests
+
+Backend ↔ Supabase.
+
+## API tests
+
+Endpoints.
+
+## Security tests
+
+Permisos y aislamiento.
+
+## Functional tests
+
+Flujos del MVP.
+
+Prioriza pruebas sobre:
+
+* login;
+* permisos;
+* clientes;
+* locales;
+* productos;
+* stock;
+* inventario;
+* usuarios;
+* fotografías;
+* administración.
+
+# PRUEBAS DE PARIDAD
+
+Para una selección de datos reales controlados compara:
+
+```text
+MVP antiguo
+vs.
+Sistema nuevo
+```
+
+Comprueba:
+
+* mismos locales;
+* mismos productos;
+* mismo stock;
+* mismos permisos;
+* mismos resultados funcionales.
+
+Las diferencias deben quedar documentadas.
+
+# CI/CD
+
+Configura posteriormente GitHub Actions para:
+
+* lint;
+* tests;
+* build;
+* validación Docker.
+
+No despliegues automáticamente a producción hasta que exista una estrategia aprobada.
+
+# DOCUMENTACIÓN
+
+Crea:
+
+```text
+README.md
+docs/ARCHITECTURE.md
+docs/DATABASE.md
+docs/API.md
+docs/DEPLOYMENT.md
+docs/SECURITY.md
+docs/MIGRATION_FUNCTIONAL.md
+```
+
+Documenta decisiones relevantes.
+
+# ADR
+
+Para decisiones arquitectónicas importantes utiliza Architecture Decision Records.
+
+Ejemplo:
+
+```text
+docs/adr/
+0001-backend-framework.md
+0002-auth-strategy.md
+0003-storage.md
+```
+
+Cada ADR debe contener:
+
+* contexto;
+* alternativas;
+* decisión;
+* consecuencias.
+
+# PLAN DE IMPLEMENTACIÓN
+
+Trabaja incrementalmente.
+
+## ETAPA 1
+
+Auditoría funcional.
+
+## ETAPA 2
+
+Auditoría Supabase.
+
+## ETAPA 3
+
+Arquitectura.
+
+## ETAPA 4
+
+Stack.
+
+## ETAPA 5
+
+Repositorio.
+
+## ETAPA 6
+
+Backend mínimo.
+
+## ETAPA 7
+
+Autenticación.
+
+## ETAPA 8
+
+Multi-tenant.
+
+## ETAPA 9
+
+Locales.
+
+## ETAPA 10
+
+Productos.
+
+## ETAPA 11
+
+Stock.
+
+## ETAPA 12
+
+Inventario.
+
+## ETAPA 13
+
+Fotografías.
+
+## ETAPA 14
+
+Administración.
+
+## ETAPA 15
+
+Estadísticas.
+
+## ETAPA 16
+
+Frontend completo.
+
+## ETAPA 17
+
+Pruebas.
+
+## ETAPA 18
+
+Docker.
+
+## ETAPA 19
+
+Seguridad.
+
+## ETAPA 20
+
+Producción.
+
+No implementes veinte módulos simultáneamente.
+
+# HITO 1
+
+Primero entrega:
+
+1. descripción funcional del sistema antiguo;
+2. actores;
+3. módulos;
+4. reglas;
+5. dependencias de Google;
+6. funcionalidades críticas;
+7. funcionalidades secundarias;
+8. código legacy innecesario;
+9. riesgos;
+10. preguntas pendientes.
+
+No programes todavía.
+
+# HITO 2
+
+Después analiza Supabase.
+
+Entrega:
+
+1. esquema;
+2. correspondencia con MVP;
+3. problemas;
+4. tablas faltantes;
+5. integridad;
+6. consultas críticas.
+
+No modifiques.
+
+# HITO 3
+
+Entrega:
+
+1. 2-3 propuestas de arquitectura;
+2. 2-3 stacks;
+3. comparación;
+4. recomendación;
+5. diagrama;
+6. estrategia de seguridad;
+7. estrategia Docker;
+8. estrategia Git.
+
+Detente.
+
+Espera mi aprobación.
+
+# HITO 4 EN ADELANTE
+
+Comienza la implementación incremental.
+
+Después de cada módulo entrega:
+
+* archivos;
+* cambios;
+* pruebas;
+* resultados;
+* riesgos;
+* pendiente siguiente.
+
+# DEFINICIÓN DE ÉXITO
+
+El nuevo proyecto estará listo para sustituir al MVP cuando:
+
+* las funcionalidades principales estén recreadas;
+* los datos provengan de Supabase;
+* Google Sheets ya no sea dependencia operacional;
+* Google Apps Script ya no sea requerido;
+* exista aislamiento multi-cliente;
+* exista autenticación segura;
+* exista autorización;
+* frontend y backend estén separados de forma razonable;
+* exista API documentada;
+* el repositorio esté en GitHub;
+* Docker funcione;
+* las pruebas pasen;
+* los secretos estén protegidos;
+* existan logs;
+* exista documentación;
+* pueda desplegarse en una infraestructura compatible con Docker.
+
+# RESTRICCIÓN FINAL
+
+No interpretes “escalable” como “hacer microservicios”.
+
+Escalable en este proyecto significa primero:
+
+* arquitectura limpia;
+* módulos bien separados;
+* PostgreSQL correctamente utilizado;
+* consultas eficientes;
+* backend sin estado cuando sea posible;
+* Docker;
+* capacidad de ejecutar varias instancias;
+* almacenamiento externo;
+* configuración mediante variables;
+* logs;
+* pruebas;
+* seguridad.
+
+Empieza simple.
+
+Diseña para crecer.
+
+No agregues complejidad hasta que exista una necesidad real.
+
+Comienza únicamente con la auditoría funcional del MVP y el análisis del esquema actual de Supabase.
+
+No escribas todavía la nueva aplicación.

@@ -1,0 +1,4 @@
+extensions|pg_stat_statements
+extensions|pg_stat_statements_info
+vault|decrypted_secrets
+public|empresa_cliente_actual|FUNCTION|uuid

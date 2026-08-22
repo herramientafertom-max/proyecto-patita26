@@ -1,0 +1,59 @@
+public|articulo|t|f
+public|cadena|t|f
+public|carpeta_almacenamiento|t|f
+public|empresa_cliente|t|f
+public|foto_terreno|t|f
+public|inventario_registro|t|f
+public|local|t|f
+public|marca|t|f
+public|persona|t|f
+public|producto_cadena|t|f
+public|producto_cliente|t|f
+public|producto_homologado|t|f
+public|producto_imagen|t|f
+public|proveedor|t|f
+public|registro_acceso|t|f
+public|registro_error|t|f
+public|seccion|t|f
+public|stock_historial|t|f
+public|stock_snapshot|t|f
+public|subcadena|t|f
+public|usuario|t|f
+public|usuario_local_asignacion|t|f
+public|carpeta_almacenamiento|carpeta_almacenamiento_select|PERMISSIVE|{public}|SELECT|((empresa_cliente_id = empresa_cliente_actual()) AND (( SELECT usuario.perfil
+   FROM usuario
+  WHERE (usuario.id = auth.uid())) = 'Administrador'::text))|
+public|empresa_cliente|empresa_cliente_select|PERMISSIVE|{public}|SELECT|(id = empresa_cliente_actual())|
+public|foto_terreno|foto_terreno_insert|PERMISSIVE|{public}|INSERT||(empresa_cliente_id = empresa_cliente_actual())
+public|foto_terreno|foto_terreno_select|PERMISSIVE|{public}|SELECT|(empresa_cliente_id = empresa_cliente_actual())|
+public|inventario_registro|inventario_registro_insert|PERMISSIVE|{public}|INSERT||(empresa_cliente_id = empresa_cliente_actual())
+public|inventario_registro|inventario_registro_select|PERMISSIVE|{public}|SELECT|(empresa_cliente_id = empresa_cliente_actual())|
+public|producto_cliente|producto_cliente_select|PERMISSIVE|{public}|SELECT|(empresa_cliente_id = empresa_cliente_actual())|
+public|producto_cliente|producto_cliente_write|PERMISSIVE|{public}|ALL|((empresa_cliente_id = empresa_cliente_actual()) AND (( SELECT usuario.perfil
+   FROM usuario
+  WHERE (usuario.id = auth.uid())) = ANY (ARRAY['Administrador'::text, 'Supervisor'::text])))|
+public|producto_homologado|producto_homologado_select|PERMISSIVE|{public}|SELECT|(empresa_cliente_id = empresa_cliente_actual())|
+public|producto_homologado|producto_homologado_write|PERMISSIVE|{public}|ALL|((empresa_cliente_id = empresa_cliente_actual()) AND (( SELECT usuario.perfil
+   FROM usuario
+  WHERE (usuario.id = auth.uid())) = ANY (ARRAY['Administrador'::text, 'Supervisor'::text])))|
+public|registro_acceso|registro_acceso_insert|PERMISSIVE|{public}|INSERT||(empresa_cliente_id = empresa_cliente_actual())
+public|registro_acceso|registro_acceso_select|PERMISSIVE|{public}|SELECT|((empresa_cliente_id = empresa_cliente_actual()) AND (( SELECT usuario.perfil
+   FROM usuario
+  WHERE (usuario.id = auth.uid())) = 'Administrador'::text))|
+public|stock_historial|stock_historial_select|PERMISSIVE|{public}|SELECT|(empresa_cliente_id = empresa_cliente_actual())|
+public|stock_snapshot|stock_snapshot_select|PERMISSIVE|{public}|SELECT|(empresa_cliente_id = empresa_cliente_actual())|
+public|usuario|usuario_insert|PERMISSIVE|{public}|INSERT||((empresa_cliente_id = empresa_cliente_actual()) AND (( SELECT usuario_1.perfil
+   FROM usuario usuario_1
+  WHERE (usuario_1.id = auth.uid())) = 'Administrador'::text))
+public|usuario|usuario_select|PERMISSIVE|{public}|SELECT|(empresa_cliente_id = empresa_cliente_actual())|
+public|usuario|usuario_update|PERMISSIVE|{public}|UPDATE|((empresa_cliente_id = empresa_cliente_actual()) AND (( SELECT usuario_1.perfil
+   FROM usuario usuario_1
+  WHERE (usuario_1.id = auth.uid())) = 'Administrador'::text))|
+public|usuario_local_asignacion|usuario_local_asignacion_select|PERMISSIVE|{public}|SELECT|(usuario_id IN ( SELECT usuario.id
+   FROM usuario
+  WHERE (usuario.empresa_cliente_id = empresa_cliente_actual())))|
+public|usuario_local_asignacion|usuario_local_asignacion_write|PERMISSIVE|{public}|ALL|((usuario_id IN ( SELECT usuario.id
+   FROM usuario
+  WHERE (usuario.empresa_cliente_id = empresa_cliente_actual()))) AND (( SELECT usuario.perfil
+   FROM usuario
+  WHERE (usuario.id = auth.uid())) = 'Administrador'::text))|

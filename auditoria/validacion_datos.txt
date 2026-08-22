@@ -1,0 +1,26 @@
+auth_users|0
+tenants|1
+users_total|117
+users_auth_linked|0
+users_by_role|Administrador|5
+users_by_role|Reponedor|12
+users_by_role|Reponedor Externo|98
+users_by_role|Supervisor|2
+locals_total|1338
+locals_legacy|63
+locals_closed|272
+products_total|1588
+products_blocked|1402
+products_without_article|528
+products_without_homologation|0
+stock_snapshot|11927
+stock_history|169922
+inventory_null_user|1003
+photos_null_user|813
+access_null_user|131
+product_images_without_url|0
+storage_buckets|0
+duplicate_person_names|0
+duplicate_local_names|0
+snapshot_orphans|0
+history_orphans|0
