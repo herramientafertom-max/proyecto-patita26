@@ -10,7 +10,7 @@ import { AuthenticatedRequest } from './auth-user';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly auth: AuthService) {}
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const value = request.headers.get
       ? request.headers.get('authorization')
@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
           .authorization;
     const token = value?.startsWith('Bearer ') ? value.slice(7) : null;
     if (!token) throw new UnauthorizedException('Token requerido');
-    request.user = this.auth.verify(token);
+    request.user = await this.auth.verifyBearerToken(token);
     return true;
   }
 }

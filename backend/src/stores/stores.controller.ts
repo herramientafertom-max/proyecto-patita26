@@ -23,6 +23,9 @@ export class StoresController {
   @Get() list(@CurrentUser() user: AuthUser, @Query() query: ListQueryDto) {
     return this.stores.list(user, query);
   }
+  @Get('my-route') myRoute(@CurrentUser() user: AuthUser) {
+    return this.stores.myRoute(user);
+  }
   @Get(':id/products') products(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseUUIDPipe) id: string,

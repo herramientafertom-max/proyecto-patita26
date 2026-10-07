@@ -7,10 +7,16 @@ services:
       NODE_ENV: development
       PORT: 3000
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      DATABASE_SSL_REJECT_UNAUTHORIZED: ${DATABASE_SSL_REJECT_UNAUTHORIZED:-true}
       JWT_SECRET: ${JWT_SECRET:-local-development-only-change-me}
       ENABLE_DEMO_AUTH: ${ENABLE_DEMO_AUTH:-true}
       DEMO_PASSWORD: ${DEMO_PASSWORD:-retail-demo-local}
       CORS_ORIGIN: http://localhost:8080
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-}
+      SUPABASE_JWT_ISSUER: ${SUPABASE_JWT_ISSUER:-}
+      SUPABASE_JWT_AUDIENCE: ${SUPABASE_JWT_AUDIENCE:-authenticated}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/api/v1/health"]
       interval: 15s

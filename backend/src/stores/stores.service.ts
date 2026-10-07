@@ -22,6 +22,15 @@ type ProductRow = {
   stock_date: string;
   total: string;
 };
+type RouteRow = Omit<StoreRow, 'total'> & {
+  lunes: boolean;
+  martes: boolean;
+  miercoles: boolean;
+  jueves: boolean;
+  viernes: boolean;
+  sabado: boolean;
+  domingo: boolean;
+};
 
 @Injectable()
 export class StoresService {
@@ -61,6 +70,40 @@ export class StoresService {
       total: Number(rows[0]?.total ?? 0),
       page: query.page,
       limit: query.limit,
+    };
+  }
+
+  async myRoute(user: AuthUser) {
+    const rows = await this.database.query<RouteRow>(
+      `select l.id, l.codigo_local as code, l.nombre_local as name, c.nombre as chain,
+              sc.nombre as subchain, l.estado as status,
+              ula.lunes, ula.martes, ula.miercoles, ula.jueves, ula.viernes, ula.sabado, ula.domingo
+       from public.usuario_local_asignacion ula
+       join public.local l on l.id = ula.local_id
+       join public.subcadena sc on sc.id = l.subcadena_id
+       join public.cadena c on c.id = sc.cadena_id
+       where ula.usuario_id = $1
+       order by c.nombre, sc.nombre, l.nombre_local`,
+      [user.id],
+    );
+    return {
+      items: rows.map((row) => ({
+        id: row.id,
+        code: row.code,
+        name: row.name,
+        chain: row.chain,
+        subchain: row.subchain,
+        status: row.status,
+        days: {
+          lunes: row.lunes,
+          martes: row.martes,
+          miercoles: row.miercoles,
+          jueves: row.jueves,
+          viernes: row.viernes,
+          sabado: row.sabado,
+          domingo: row.domingo,
+        },
+      })),
     };
   }
 

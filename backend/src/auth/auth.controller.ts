@@ -11,7 +11,7 @@ import { DemoLoginDto } from './demo-login.dto';
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
   @Post('demo') demo(@Body() input: DemoLoginDto) {
-    return this.auth.demoLogin(input.password);
+    return this.auth.demoLogin(input.password, input.role);
   }
   @Get('me') @ApiBearerAuth() @UseGuards(AuthGuard) me(
     @CurrentUser() user: AuthUser,

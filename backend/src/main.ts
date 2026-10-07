@@ -4,6 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { DatabaseService } from './database/database.service';
+import { RlsContextInterceptor } from './database/rls-context.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,6 +22,9 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
     }),
+  );
+  app.useGlobalInterceptors(
+    new RlsContextInterceptor(app.get(DatabaseService)),
   );
   const document = SwaggerModule.createDocument(
     app,

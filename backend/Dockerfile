@@ -14,6 +14,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 RUN addgroup -S retail && adduser -S retail -G retail
 COPY --from=dependencies /app/node_modules ./node_modules
+COPY --from=dependencies /app/backend/node_modules ./backend/node_modules
 COPY --from=build /app/backend/dist ./backend/dist
 COPY backend/package.json ./backend/package.json
 USER retail

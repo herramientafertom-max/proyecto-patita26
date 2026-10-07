@@ -4,7 +4,10 @@ import { z } from 'zod';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import { ProductsModule } from './products/products.module';
 import { StoresModule } from './stores/stores.module';
+import { UsersModule } from './users/users.module';
+import { PhotosModule } from './photos/photos.module';
 
 const schema = z.object({
   NODE_ENV: z
@@ -16,6 +19,12 @@ const schema = z.object({
   DEMO_PASSWORD: z.string().min(8).default('retail-demo-local'),
   ENABLE_DEMO_AUTH: z.enum(['true', 'false']).default('true'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  SUPABASE_URL: z.string().url().optional().or(z.literal('')),
+  SUPABASE_JWT_SECRET: z.string().min(1).optional().or(z.literal('')),
+  SUPABASE_JWT_ISSUER: z.string().min(1).optional().or(z.literal('')),
+  SUPABASE_JWT_AUDIENCE: z.string().min(1).default('authenticated'),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional().or(z.literal('')),
+  DATABASE_SSL_REJECT_UNAUTHORIZED: z.enum(['true', 'false']).default('true'),
 });
 
 @Module({
@@ -29,6 +38,9 @@ const schema = z.object({
     HealthModule,
     AuthModule,
     StoresModule,
+    UsersModule,
+    PhotosModule,
+    ProductsModule,
   ],
 })
 export class AppModule {}

@@ -6,13 +6,18 @@ Reconstrucción profesional del MVP retail basado en Google Apps Script/Sheets. 
 
 - Base histórica migrada y auditada.
 - API REST versionada y Swagger.
-- Acceso demo exclusivamente local.
+- Acceso demo local y verificación productiva de tokens de Supabase Auth (backend).
+- Administración de usuarios (crear, editar, RUT, perfil, estado, asignaciones, vínculo de cuenta Auth) con auditoría append-only.
+- Administración de catálogo de productos (crear, editar, clonar, activar/bloquear) con marca/sección/proveedor dinámicos y auditoría.
+- Gestión de quiebres: declarar/revertir individual o propagado por EAN (candado ≥ 8 dígitos), con auditoría.
+- RLS corregido para resolver identidad vía `usuario.auth_user_id`.
 - Listado multi-tenant de locales.
 - Productos y stock vigente por local con búsqueda y paginación.
-- Frontend responsive orientado a operación en terreno.
+- Frontend responsive orientado a operación en terreno, con panel administrativo de catálogo.
+- Portal de trabajadores con ruta semanal, locales asignados, productos, historial y evidencia fotográfica.
 - Docker Compose validado de extremo a extremo.
 
-La autenticación productiva, Storage, inventarios editables y administración aún están pendientes.
+La interfaz de usuarios/reponedores y la carga de fotografías de catálogo/terreno ya están implementadas en local. Para activar fotografías en un entorno se debe aplicar la migración 010 y configurar la clave de servicio de Supabase solo en el backend. Inventarios editables, invitación de cuentas nuevas en Supabase Auth, estadísticas y tareas programadas aún están pendientes.
 
 ## Probar ahora
 

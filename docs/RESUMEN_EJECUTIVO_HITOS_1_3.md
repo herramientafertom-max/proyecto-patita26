@@ -14,8 +14,8 @@ Se completaron las tres fases de análisis previas a implementación:
 - Google Apps Script/Sheets debe conservarse solo como especificación funcional.
 - PostgreSQL contiene la información necesaria y soporta el volumen previsto.
 - No se justifican microservicios, Redis ni particionamiento inmediato.
-- Los bloqueos actuales son identidad/Auth, RLS multi-tenant, Storage, permisos exactos e ingestión diaria.
-- El frontend principal del catálogo no fue entregado; la auditoría de experiencia de usuario está pendiente.
+- Auth, RLS con contexto transaccional, Storage privado y permisos de catálogo/usuarios están implementados; falta provisionar el rol PostgreSQL sin `BYPASSRLS` en producción e ingestión diaria.
+- El frontend incluye operación, catálogo, usuarios y fotografías; la auditoría de experiencia de usuario sigue pendiente.
 - Se recomienda un monolito modular TypeScript con NestJS + React/Vite, API REST/OpenAPI y Supabase Auth/Storage, todo ejecutable con Docker.
 
 ## Aprobaciones requeridas

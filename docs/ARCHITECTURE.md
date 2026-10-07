@@ -5,7 +5,7 @@
 ```text
 Navegador → Nginx/Frontend React → API NestJS → PostgreSQL/Supabase
                                       ↓
-                            Auth y Storage (pendientes)
+                           Auth y Storage privados
 ```
 
 La solución es un monolito modular. Frontend y backend se empaquetan por separado; Supabase permanece como servicio externo intencional.
@@ -13,11 +13,11 @@ La solución es un monolito modular. Frontend y backend se empaquetan por separa
 ## Backend
 
 - Prefijo `/api/v1`.
-- Módulos actuales: `health`, `auth`, `stores` y `database`.
+- Módulos actuales: `health`, `auth`, `stores`, `products`, `users`, `photos`, `audit` y `database`.
 - DTO validation global y rechazo de propiedades desconocidas.
 - Helmet y CORS configurable.
 - Consultas parametrizadas mediante `pg`.
-- Tenant, usuario y rol provienen del token verificado.
+- Tenant, usuario y rol provienen del token verificado. Las solicitudes autenticadas se ejecutan con identidad RLS local a la transacción.
 
 ## Frontend
 
@@ -25,6 +25,7 @@ La solución es un monolito modular. Frontend y backend se empaquetan por separa
 - TanStack Query para estado remoto.
 - Búsqueda y selección de locales.
 - Catálogo paginado de productos y stock.
+- Administración de catálogo, usuarios, asignaciones y fotografías según rol.
 - Tamaños táctiles, contraste y etiquetas accesibles.
 
 ## Decisiones

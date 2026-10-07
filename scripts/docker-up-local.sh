@@ -16,5 +16,7 @@ if [ -z "$database_url" ]; then
 fi
 
 cd "$project_dir"
-DATABASE_URL="$database_url" docker compose up -d --build
+DATABASE_URL="$database_url" \
+DATABASE_SSL_REJECT_UNAUTHORIZED="${DATABASE_SSL_REJECT_UNAUTHORIZED:-false}" \
+docker compose up -d --build
 printf '%s\n' 'Aplicación disponible en http://localhost:8080'
