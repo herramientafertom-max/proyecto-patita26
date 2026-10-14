@@ -1,0 +1,25 @@
+services:
+  postgres-integration:
+    # PostgreSQL 16 is pinned because it is already available on the development host.
+    # Production is PostgreSQL 17; the remaining major-version drift is tracked as a
+    # validation risk and must be covered before a production migration is approved.
+    image: postgres:16
+    environment:
+      POSTGRES_DB: retail_integration
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_integration_only
+    ports:
+      - "127.0.0.1:${INTEGRATION_DB_PORT:-55432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d retail_integration"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - retail-integration
+
+networks:
+  retail-integration:
+    driver: bridge

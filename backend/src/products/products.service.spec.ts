@@ -194,7 +194,7 @@ describe('ProductsService.update', () => {
   it('bloquea la edición de identidad compartida con otra empresa', async () => {
     const client = makeClient([
       ['for update of pcl', [productForUpdateRow]],
-      ['select exists (', [{ compartido: true }]],
+      ['actualizar_producto_cadena_seguro', [{ actualizado: false }]],
     ]);
     const service = new ProductsService(
       makeDatabase(client) as never,
@@ -211,6 +211,57 @@ describe('ProductsService.update', () => {
           call.text.includes('update public.articulo'),
       ),
     ).toBe(false);
+  });
+
+  it('bloquea unidades por caja cuando otra referencia de cadena comparte el artículo', async () => {
+    const client = makeClient([
+      ['for update of pcl', [productForUpdateRow]],
+      ['actualizar_unidades_articulo_seguro', [{ actualizado: false }]],
+      ...DETAIL_RULES,
+    ]);
+    const service = new ProductsService(
+      makeDatabase(client) as never,
+      makeAudit(),
+    );
+
+    await expect(
+      service.update(actor, 'product-1', { unidadesPorCaja: 24 }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(
+      client.calls.some((call) =>
+        call.text.includes('update public.articulo set unidades_por_caja'),
+      ),
+    ).toBe(false);
+  });
+
+  it('acepta las mutaciones cuando ambas funciones seguras autorizan el catálogo exclusivo', async () => {
+    const client = makeClient([
+      ['for update of pcl', [productForUpdateRow]],
+      ['actualizar_unidades_articulo_seguro', [{ actualizado: true }]],
+      ['actualizar_producto_cadena_seguro', [{ actualizado: true }]],
+      ...DETAIL_RULES,
+    ]);
+    const service = new ProductsService(
+      makeDatabase(client) as never,
+      makeAudit(),
+    );
+
+    const result = await service.update(actor, 'product-1', {
+      unidadesPorCaja: 24,
+      nombreCadena: 'Nombre seguro',
+    });
+
+    expect(result.id).toBe('product-1');
+    expect(
+      client.calls.some((call) =>
+        call.text.includes('actualizar_unidades_articulo_seguro'),
+      ),
+    ).toBe(true);
+    expect(
+      client.calls.some((call) =>
+        call.text.includes('actualizar_producto_cadena_seguro'),
+      ),
+    ).toBe(true);
   });
 
   it('actualiza precio sin tocar identidad ni homologación', async () => {

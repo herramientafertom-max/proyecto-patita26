@@ -563,21 +563,6 @@ export class ProductsService {
     const relocates =
       targetCadenaId !== before.cadena_id || targetSap !== before.sap;
 
-    if (!relocates) {
-      const shared = await client.query<{ compartido: boolean }>(
-        `select exists (
-           select 1 from public.producto_cliente
-           where producto_cadena_id = $1 and empresa_cliente_id <> $2
-         ) as compartido`,
-        [before.producto_cadena_id, actor.tenantId],
-      );
-      if (shared[0]?.compartido) {
-        throw new ConflictException(
-          'La identidad del producto está compartida con otra empresa. Cambia cadena o SAP para crear una referencia independiente.',
-        );
-      }
-    }
-
     const articuloId = await resolveArticuloForUpdate(client, before, dto);
     const sapPack = dto.sapPack !== undefined ? dto.sapPack : before.sap_pack;
     const nombreCadena =
@@ -614,10 +599,8 @@ export class ProductsService {
         [newProductoCadenaId, id],
       );
     } else {
-      await client.query(
-        `update public.producto_cadena
-           set sap_pack = $2, articulo_id = $3, nombre_texto_cadena = $4, marca_texto_cadena = $5
-         where id = $1`,
+      const updated = await client.query<{ actualizado: boolean }>(
+        `select public.actualizar_producto_cadena_seguro($1, $2, $3, $4, $5) as actualizado`,
         [
           before.producto_cadena_id,
           sapPack,
@@ -626,6 +609,11 @@ export class ProductsService {
           marcaTextoCadena,
         ],
       );
+      if (!updated[0]?.actualizado) {
+        throw new ConflictException(
+          'La identidad del producto está compartida con otra empresa y no puede modificarse directamente.',
+        );
+      }
     }
 
     await this.audit.record(client, actor, {
@@ -709,7 +697,7 @@ export class ProductsService {
        left join public.articulo a on a.id = pc.articulo_id
        left join public.producto_homologado ph on ph.id = pcl.producto_homologado_id
        where pcl.empresa_cliente_id = $1 and pcl.id = $2
-       for update of pcl, pc`,
+       for update of pcl`,
       [actor.tenantId, id],
     );
     return rows[0] ?? null;
@@ -764,10 +752,15 @@ async function resolveArticuloForUpdate(
   if (!eanUnidadChanging && !eanPackChanging) {
     if (dto.unidadesPorCaja === undefined) return before.articulo_id;
     if (before.articulo_id) {
-      await client.query(
-        `update public.articulo set unidades_por_caja = $2 where id = $1`,
+      const updated = await client.query<{ actualizado: boolean }>(
+        `select public.actualizar_unidades_articulo_seguro($1, $2) as actualizado`,
         [before.articulo_id, dto.unidadesPorCaja],
       );
+      if (!updated[0]?.actualizado) {
+        throw new ConflictException(
+          'Las unidades por caja pertenecen a un artículo compartido con otra empresa y no pueden modificarse directamente.',
+        );
+      }
       return before.articulo_id;
     }
     return findOrCreateArticulo(

@@ -18,6 +18,18 @@ const schema = z.object({
   JWT_SECRET: z.string().min(24).default('local-development-only-change-me'),
   DEMO_PASSWORD: z.string().min(8).default('retail-demo-local'),
   ENABLE_DEMO_AUTH: z.enum(['true', 'false']).default('true'),
+  DEMO_AUTH_USER_ID_ADMINISTRADOR: z
+    .string()
+    .uuid()
+    .optional()
+    .or(z.literal('')),
+  DEMO_AUTH_USER_ID_SUPERVISOR: z.string().uuid().optional().or(z.literal('')),
+  DEMO_AUTH_USER_ID_REPONEDOR: z.string().uuid().optional().or(z.literal('')),
+  DEMO_AUTH_USER_ID_REPONEDOR_EXTERNO: z
+    .string()
+    .uuid()
+    .optional()
+    .or(z.literal('')),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   SUPABASE_URL: z.string().url().optional().or(z.literal('')),
   SUPABASE_JWT_SECRET: z.string().min(1).optional().or(z.literal('')),

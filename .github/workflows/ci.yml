@@ -18,5 +18,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test
+      - run: bash scripts/test-integration.sh post
       - run: npm run build
-      - run: docker compose config
+      - run: docker compose config --quiet
+        env:
+          DATABASE_URL: postgresql://retail_api:ci_only@database.invalid:5432/retail

@@ -53,11 +53,19 @@ Tres funciones `SECURITY DEFINER` con `search_path` fijo resuelven la identidad 
 
 Las políticas usan estas funciones, por lo que la identidad no depende de claims de PostgREST. Las tablas de catálogo compartido entre empresas (`cadena`, `subcadena`, `local`, `articulo`, `proveedor`, `marca`, `seccion`, `producto_cadena`) tienen lectura para usuarios autenticados. `persona` solo es visible si existe un `usuario` de la misma empresa vinculado a ese RUT. `registro_error` se deja deliberadamente sin políticas (log técnico global, sin tenant).
 
+La migración 012 agrega `autenticar_usuario(auth_user_id)` para romper el ciclo de arranque previo
+al contexto RLS, concede permisos mínimos a `retail_api` y obliga a mutar `articulo` y
+`producto_cadena` mediante funciones atómicas que rechazan uso multiempresa. Las políticas de
+escritura validan el perfil también en `WITH CHECK` y comprueban las referencias privadas del
+tenant. Antes de conceder el contrato mínimo, 012 revoca privilegios residuales de tablas,
+secuencias y esquema; también rechaza `retail_api` con replicación, membresías o propiedad de
+tablas/esquema `public`.
+
 RLS es una defensa adicional: el backend **siempre** filtra por el `tenantId` resuelto desde el JWT verificado, sin depender exclusivamente de RLS.
 
 ## Pendientes
 
-- Ejecutar las migraciones 006-011 contra Supabase (no se ejecutan automáticamente; ver reglas del incremento).
+- Ejecutar las migraciones pendientes hasta 012 en una integración PostgreSQL 17 antes de solicitar autorización para Supabase; no se ejecutan automáticamente.
 - Medir consultas definitivas con `EXPLAIN ANALYZE`.
 - Provisionar cuentas nuevas en Supabase Auth (invitaciones por correo): no implementado; el backend solo permite vincular un `auth_user_id` ya existente.
 - Configurar `SUPABASE_SERVICE_ROLE_KEY` en el backend y aplicar la migración 010 para crear los buckets privados antes de habilitar cargas.

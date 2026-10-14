@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -18,12 +19,12 @@ type UserRow = {
   auth_user_id: string | null;
 };
 
-const USER_QUERY_BASE = `
-  select u.id, u.empresa_cliente_id as tenant_id, u.perfil as role, p.nombre as name, u.auth_user_id
-  from public.usuario u
-  join public.persona p on p.rut = u.persona_rut
-  join public.empresa_cliente ec on ec.id = u.empresa_cliente_id
-  where u.estado = 'Activo' and ec.estado = 'Activo'`;
+const DEMO_AUTH_USER_ID_BY_ROLE: Record<string, string> = {
+  Administrador: 'DEMO_AUTH_USER_ID_ADMINISTRADOR',
+  Supervisor: 'DEMO_AUTH_USER_ID_SUPERVISOR',
+  Reponedor: 'DEMO_AUTH_USER_ID_REPONEDOR',
+  'Reponedor Externo': 'DEMO_AUTH_USER_ID_REPONEDOR_EXTERNO',
+};
 
 @Injectable()
 export class AuthService {
@@ -54,14 +55,16 @@ export class AuthService {
       .digest();
     if (!timingSafeEqual(actualHash, expectedHash))
       throw new UnauthorizedException('Clave de demostración incorrecta');
-    const rows = await this.database.query<UserRow>(
-      `${USER_QUERY_BASE} and u.perfil = $1
-       order by u.creado_en, u.id limit 1`,
-      [role],
-    );
-    if (!rows[0])
-      throw new UnauthorizedException('No existe un administrador habilitado');
-    const user = this.toAuthUser(rows[0]);
+    const configKey = DEMO_AUTH_USER_ID_BY_ROLE[role];
+    const authUserId = configKey
+      ? this.config.get<string>(configKey)
+      : undefined;
+    if (!authUserId) {
+      throw new ServiceUnavailableException(
+        'El perfil demo solicitado no tiene una identidad local configurada.',
+      );
+    }
+    const user = await this.resolveByAuthUserId(authUserId);
     return {
       accessToken: jwt.sign(user, this.secret, {
         algorithm: 'HS256',
@@ -122,7 +125,8 @@ export class AuthService {
 
   private async resolveByAuthUserId(authUserId: string): Promise<AuthUser> {
     const rows = await this.database.query<UserRow>(
-      `${USER_QUERY_BASE} and u.auth_user_id = $1`,
+      `select id, tenant_id, role, name, auth_user_id
+       from public.autenticar_usuario($1::uuid)`,
       [authUserId],
     );
     if (!rows[0])

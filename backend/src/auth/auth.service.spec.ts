@@ -1,4 +1,7 @@
-import { UnauthorizedException } from '@nestjs/common';
+import {
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
 import { AuthService } from './auth.service';
@@ -12,6 +15,9 @@ const activeUserRow = {
   auth_user_id: 'auth-user-id',
 };
 
+const DEMO_ADMIN_AUTH_ID = '30000000-0000-4000-8001-000000000001';
+const DEMO_REPONEDOR_AUTH_ID = '30000000-0000-4000-8001-000000000003';
+
 function buildConfig(values: Record<string, string>): ConfigService {
   return new ConfigService(values);
 }
@@ -21,6 +27,8 @@ describe('AuthService — modo demo', () => {
     NODE_ENV: 'development',
     ENABLE_DEMO_AUTH: 'true',
     DEMO_PASSWORD: 'demo-password',
+    DEMO_AUTH_USER_ID_ADMINISTRADOR: DEMO_ADMIN_AUTH_ID,
+    DEMO_AUTH_USER_ID_REPONEDOR: DEMO_REPONEDOR_AUTH_ID,
     JWT_SECRET: 'a-secret-with-more-than-24-characters',
   });
   const database = {
@@ -45,12 +53,18 @@ describe('AuthService — modo demo', () => {
     });
   });
 
-  it('selecciona el perfil solicitado solo en el modo demo', async () => {
+  it('resuelve el perfil demo por auth_user_id mediante el mismo bootstrap restringido', async () => {
     await service.demoLogin('demo-password', 'Reponedor');
     expect(database.query).toHaveBeenLastCalledWith(
-      expect.stringContaining('u.perfil = $1'),
-      ['Reponedor'],
+      expect.stringContaining('public.autenticar_usuario($1::uuid)'),
+      [DEMO_REPONEDOR_AUTH_ID],
     );
+  });
+
+  it('falla de forma explícita si el perfil demo no tiene identidad configurada', async () => {
+    await expect(
+      service.demoLogin('demo-password', 'Supervisor'),
+    ).rejects.toBeInstanceOf(ServiceUnavailableException);
   });
 
   it('verifyBearerToken acepta el token demo cuando Supabase no está configurado', async () => {
@@ -83,7 +97,7 @@ describe('AuthService — Supabase Auth (secreto compartido HS256)', () => {
     });
   }
 
-  it('resuelve el AuthUser desde PostgreSQL usando auth_user_id, no el token', async () => {
+  it('resuelve el AuthUser mediante el bootstrap restringido, no mediante una lectura RLS directa', async () => {
     const database = { query: jest.fn().mockResolvedValue([activeUserRow]) };
     const service = new AuthService(config, database as never, supabaseJwt);
     const token = sign({ role: 'este-rol-no-debe-usarse' });
@@ -96,7 +110,7 @@ describe('AuthService — Supabase Auth (secreto compartido HS256)', () => {
       role: 'Administrador',
     });
     expect(database.query).toHaveBeenCalledWith(
-      expect.stringContaining('auth_user_id = $1'),
+      expect.stringContaining('public.autenticar_usuario($1::uuid)'),
       ['auth-user-id'],
     );
   });

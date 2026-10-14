@@ -33,7 +33,9 @@ Clave demo local:
 retail-demo-local
 ```
 
-El modo demo está bloqueado automáticamente cuando `NODE_ENV=production`.
+Además, configura en `.env` al menos el `DEMO_AUTH_USER_ID_*` del perfil que usarás (consulta
+`.env.example`). Debe corresponder a un usuario local activo vinculado por `auth_user_id`. El modo
+demo está bloqueado automáticamente cuando `NODE_ENV=production`.
 
 Para volver a levantarlo:
 

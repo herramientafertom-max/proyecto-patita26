@@ -1,6 +1,7 @@
 # Credenciales y variables locales
 .env
 .env.*
+!.env.example
 credenciales.txt
 
 # Datos privados y artefactos locales de migración

@@ -39,7 +39,7 @@ Los listados aceptan `search`, `page` y `limit` (máximo 100). Las respuestas in
 
 ## Autenticación
 
-El `Bearer` puede ser un token de Supabase Auth (verificado criptográficamente contra `SUPABASE_JWT_SECRET` o el JWKS de `SUPABASE_URL`, según configuración) o el token demo local (solo si `ENABLE_DEMO_AUTH=true` y `NODE_ENV` no es `production`). En ambos casos el backend resuelve el usuario, tenant y rol consultando PostgreSQL por `auth_user_id` (o desde el propio token en modo demo); nunca confía en claims de rol/tenant enviados por el cliente. Respuestas `401` indican identidad inválida; `403`, permisos insuficientes para el rol autenticado.
+El `Bearer` puede ser un token de Supabase Auth (verificado criptográficamente contra `SUPABASE_JWT_SECRET` o el JWKS de `SUPABASE_URL`, según configuración) o el token demo local (solo si `ENABLE_DEMO_AUTH=true` y `NODE_ENV` no es `production`). Tanto Supabase como el login demo resuelven primero el usuario, tenant y rol en PostgreSQL mediante `autenticar_usuario(auth_user_id)`; el modo demo usa UUID explícitos por perfil (`DEMO_AUTH_USER_ID_*`). El token demo emitido conserva esa identidad ya resuelta durante su vida local. Nunca se aceptan claims de rol/tenant suministrados por el cliente. Respuestas `401` indican identidad inválida; `403`, permisos insuficientes para el rol autenticado.
 
 ## Administración de usuarios
 
