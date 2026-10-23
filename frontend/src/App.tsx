@@ -4,8 +4,39 @@ import { api, Product, RouteStore, setAccessToken, setUnauthorizedHandler, Store
 import CatalogAdmin from './CatalogAdmin';
 import UsersAdmin from './UsersAdmin';
 import FieldPhotos from './FieldPhotos';
+import { signInWithPassword, signOut, supabase } from './auth';
 
-function Login({ onLogin }: { onLogin: (token: string) => void }) {
+function AccountLogin({ onLogin }: { onLogin: (token: string) => void }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  async function submit(event: FormEvent) {
+    event.preventDefault(); setLoading(true); setError('');
+    try {
+      onLogin(await signInWithPassword(email, password));
+    } catch (err) { setError(err instanceof Error ? err.message : 'Error de acceso'); }
+    finally { setLoading(false); }
+  }
+  return <main className="login-page">
+    <section className="login-card" aria-labelledby="login-title">
+      <div className="brand-mark">R</div>
+      <p className="eyebrow">Plataforma de operaciones</p>
+      <h1 id="login-title">Retail en terreno</h1>
+      <p className="intro">Ingresa con tu cuenta corporativa.</p>
+      <form onSubmit={submit}>
+        <label htmlFor="email">Correo</label>
+        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
+        <label htmlFor="password">Contraseña</label>
+        <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+        {error && <p className="error" role="alert">{error}</p>}
+        <button disabled={loading}>{loading ? 'Ingresando…' : 'Ingresar'}</button>
+      </form>
+    </section>
+  </main>;
+}
+
+function DemoLogin({ onLogin }: { onLogin: (token: string) => void }) {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Administrador');
   const [error, setError] = useState('');
@@ -110,21 +141,34 @@ export default function App() {
   const [token, setToken] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const logout = () => {
+    void signOut();
     setAccessToken(null);
     queryClient.clear();
     setToken(null);
   };
   useEffect(() => {
     setUnauthorizedHandler(() => {
+      void signOut();
       setAccessToken(null);
       queryClient.clear();
       setToken(null);
     });
     return () => setUnauthorizedHandler(null);
   }, [queryClient]);
+  useEffect(() => {
+    if (!supabase) return;
+    // Restaura la sesión persistida y mantiene el token vigente tras cada renovación.
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextToken = session?.access_token ?? null;
+      setAccessToken(nextToken);
+      setToken(nextToken);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
   const login = (nextToken: string) => {
     setAccessToken(nextToken);
     setToken(nextToken);
   };
-  return token ? <Dashboard onLogout={logout} /> : <Login onLogin={login} />;
+  if (token) return <Dashboard onLogout={logout} />;
+  return supabase ? <AccountLogin onLogin={login} /> : <DemoLogin onLogin={login} />;
 }
